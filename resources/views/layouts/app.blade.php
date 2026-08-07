@@ -112,9 +112,7 @@
             <span class="text-[10px] font-medium">Import</span>
         </a>
         <a href="{{ route('scanner') }}" class="flex flex-col items-center justify-center p-2 {{ request()->routeIs('scanner') ? 'text-sky-600' : 'text-slate-400 hover:text-sky-500' }}">
-            <div class="{{ request()->routeIs('scanner') ? 'bg-sky-100 text-sky-600' : 'bg-slate-100 text-slate-500' }} p-2 rounded-xl mb-1">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-            </div>
+            <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
             <span class="text-[10px] font-medium">Scan</span>
         </a>
         <a href="{{ route('history') }}" class="flex flex-col items-center p-2 {{ request()->routeIs('history') ? 'text-sky-600' : 'text-slate-400 hover:text-sky-500' }}">

@@ -20,8 +20,15 @@ class ReceiptsImport implements ToModel, WithHeadingRow, WithBatchInserts, WithC
             return null;
         }
 
-        // Hindari duplikat di master data
-        if (Receipt::where('tracking_number', $row['no_resi'])->exists()) {
+        // Hindari duplikat di master data, tapi gabungkan nama produk
+        $existing = Receipt::where('tracking_number', $row['no_resi'])->first();
+        $productName = $row['nama_produk'] ?? null;
+        
+        if ($existing) {
+            if ($productName && !str_contains($existing->product_name ?? '', $productName)) {
+                $existing->product_name = $existing->product_name ? $existing->product_name . ', ' . $productName : $productName;
+                $existing->save();
+            }
             return null;
         }
 

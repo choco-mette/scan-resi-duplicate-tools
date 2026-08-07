@@ -12,7 +12,12 @@ class History extends Component
 
     public $search = '';
     public $statusFilter = '';
-    public $dateFilter = '';
+    public $dateFilter;
+    
+    public function mount()
+    {
+        $this->dateFilter = \Carbon\Carbon::today()->format('Y-m-d');
+    }
     
     // Customizing pagination theme for Tailwind is usually done in AppServiceProvider,
     // but for Livewire 3 it uses Tailwind by default.

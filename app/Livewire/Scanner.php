@@ -29,10 +29,12 @@ class Scanner extends Component
             return;
         }
 
+        $productInfo = $receipt->product_name ? " ({$receipt->product_name})" : "";
+
         // 2. Duplicate
         if ($receipt->status === 'scanned') {
             $this->scanStatus = 'duplicate';
-            $this->message = "DUPLIKAT! Resi {$trackingNumber} sudah pernah di-scan.";
+            $this->message = "DUPLIKAT! Resi {$trackingNumber}{$productInfo} sudah di-scan.";
             $this->logScan('duplicate', $receipt->id);
             $this->dispatch('scanProcessed', status: 'duplicate');
             return;
@@ -45,7 +47,7 @@ class Scanner extends Component
         ]);
         
         $this->scanStatus = 'success';
-        $this->message = "OK! Resi {$trackingNumber} valid.";
+        $this->message = "OK! Resi {$trackingNumber}{$productInfo} valid.";
         $this->logScan('success', $receipt->id);
         $this->dispatch('scanProcessed', status: 'success');
     }

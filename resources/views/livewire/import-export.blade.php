@@ -5,21 +5,22 @@
             <p class="text-slate-500">Kelola resi yang akan discan hari ini</p>
         </div>
         
-        <div class="flex flex-col md:flex-row gap-3">
+        <div class="flex flex-row gap-2 md:gap-3 w-full md:w-auto mt-4 md:mt-0">
             
             <!-- Import Excel Trigger -->
-            <form wire:submit="import" class="flex gap-2">
-                <input wire:model="file" type="file" accept=".xlsx,.csv,.xls" id="excel_upload" class="hidden" onchange="this.form.dispatchEvent(new Event('submit'))">
-                <button type="button" onclick="document.getElementById('excel_upload').click()" class="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition shadow-sm" wire:loading.attr="disabled">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+            <div class="flex-1 flex flex-col">
+                <input wire:model="file" type="file" accept=".xlsx,.csv,.xls" id="excel_upload" class="hidden">
+                <button type="button" onclick="document.getElementById('excel_upload').click()" class="w-full flex justify-center items-center gap-1 md:gap-2 bg-green-600 hover:bg-green-700 text-white px-2 py-2 md:px-4 md:py-2 rounded-lg font-medium transition shadow-sm text-xs md:text-base" wire:loading.attr="disabled">
+                    <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                     <span wire:loading.remove wire:target="file">Import Excel</span>
                     <span wire:loading wire:target="file">Uploading...</span>
                 </button>
-            </form>
+                @error('file') <span class="text-red-500 text-[10px] font-bold mt-1 text-center">{{ $message }}</span> @enderror
+            </div>
             
             <!-- Tambah Manual Trigger -->
-            <button @click="showModal = true" class="flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-lg font-medium transition shadow-sm">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            <button @click="showModal = true" class="flex-1 flex justify-center items-center gap-1 md:gap-2 bg-sky-600 hover:bg-sky-700 text-white px-2 py-2 md:px-4 md:py-2 rounded-lg font-medium transition shadow-sm text-xs md:text-base">
+                <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                 Tambah Manual
             </button>
         </div>
@@ -32,13 +33,16 @@
         </div>
     @endif
 
-    <!-- Data Table -->
-    <div class="bg-white shadow rounded-xl overflow-hidden border border-slate-200">
-        <div class="overflow-x-auto">
+    <!-- Data List (Responsive) -->
+    <div class="bg-transparent md:bg-white md:shadow rounded-xl overflow-hidden md:border md:border-slate-200">
+        
+        <!-- Desktop Table View -->
+        <div class="hidden md:block overflow-x-auto">
             <table class="w-full text-sm text-left text-slate-500">
                 <thead class="text-xs text-slate-700 uppercase bg-slate-50 border-b border-slate-200">
                     <tr>
                         <th class="px-6 py-4">No. Resi</th>
+                        <th class="px-6 py-4">Barang</th>
                         <th class="px-6 py-4">No. Pesanan</th>
                         <th class="px-6 py-4">Ekspedisi</th>
                         <th class="px-6 py-4">Status</th>
@@ -49,6 +53,7 @@
                     @forelse($receipts as $receipt)
                     <tr class="bg-white border-b hover:bg-slate-50">
                         <td class="px-6 py-4 font-bold text-slate-900">{{ $receipt->tracking_number }}</td>
+                        <td class="px-6 py-4 truncate max-w-[200px]" title="{{ $receipt->product_name }}">{{ $receipt->product_name ?: '-' }}</td>
                         <td class="px-6 py-4">{{ $receipt->order_id ?: '-' }}</td>
                         <td class="px-6 py-4">{{ $receipt->expedition ? $receipt->expedition->name : '-' }}</td>
                         <td class="px-6 py-4">
@@ -60,14 +65,59 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="px-6 py-12 text-center text-slate-500">Belum ada data resi. Silakan import atau tambah manual.</td>
+                        <td colspan="6" class="px-6 py-12 text-center text-slate-500 bg-white">Belum ada data resi. Silakan import atau tambah manual.</td>
                     </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
+
+        <!-- Mobile Card View -->
+        <div class="md:hidden space-y-3">
+            @forelse($receipts as $receipt)
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col gap-2">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">No. Resi</span>
+                        <span class="text-lg font-black text-slate-800">{{ $receipt->tracking_number }}</span>
+                    </div>
+                    <span class="px-2 py-1 rounded-full text-[10px] font-bold text-white {{ $receipt->status === 'scanned' ? 'bg-green-500' : 'bg-slate-400' }}">
+                        {{ strtoupper($receipt->status) }}
+                    </span>
+                </div>
+                
+                <div class="mt-2 text-sm text-slate-600 leading-tight">
+                    <span class="font-semibold text-slate-700">Barang:</span> {{ $receipt->product_name ?: '-' }}
+                </div>
+                
+                <div class="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-slate-100">
+                    <div>
+                        <span class="text-[10px] font-semibold text-slate-400 uppercase block">Pesanan</span>
+                        <span class="text-sm font-medium text-slate-700">{{ $receipt->order_id ?: '-' }}</span>
+                    </div>
+                    <div>
+                        <span class="text-[10px] font-semibold text-slate-400 uppercase block">Ekspedisi</span>
+                        <span class="text-sm font-medium text-slate-700">{{ $receipt->expedition ? $receipt->expedition->name : '-' }}</span>
+                    </div>
+                </div>
+                
+                <div class="mt-1 pt-2 border-t border-slate-100">
+                    <span class="text-[10px] font-semibold text-slate-400 uppercase block">Ditambahkan pada</span>
+                    <span class="text-xs font-medium text-slate-500">{{ $receipt->created_at->format('d M Y, H:i') }}</span>
+                </div>
+            </div>
+            @empty
+            <div class="bg-white p-8 rounded-xl shadow-sm border border-slate-200 text-center text-slate-500">
+                Belum ada data resi. Silakan import atau tambah manual.
+            </div>
+            @endforelse
+        </div>
+        
         @if($receipts->hasPages())
         <div class="px-6 py-4 border-t border-slate-200 bg-slate-50">
+            <div class="text-xs text-slate-500 mb-3 md:hidden text-center font-semibold">
+                Halaman {{ $receipts->currentPage() }} dari {{ $receipts->lastPage() }}
+            </div>
             {{ $receipts->links() }}
         </div>
         @endif

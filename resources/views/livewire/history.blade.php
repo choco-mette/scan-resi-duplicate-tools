@@ -20,25 +20,41 @@
     </div>
 
     <!-- Mobile View: Card Based -->
-    <div class="md:hidden space-y-4">
+    <div class="md:hidden space-y-3">
         @forelse($logs as $log)
-        <div class="bg-white rounded-xl shadow p-4 border-l-4 {{ $log->status === 'success' ? 'border-green-500' : ($log->status === 'duplicate' ? 'border-red-500' : 'border-yellow-500') }}">
-            <div class="flex justify-between items-start mb-2">
-                <div class="font-bold text-lg text-gray-800">{{ $log->scanned_tracking_number }}</div>
-                <div class="text-xs px-2 py-1 rounded-full text-white {{ $log->status === 'success' ? 'bg-green-500' : ($log->status === 'duplicate' ? 'bg-red-500' : 'bg-yellow-500') }}">
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col gap-2">
+            <div class="flex justify-between items-start">
+                <div>
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">No. Resi</span>
+                    <span class="text-lg font-black text-slate-800">{{ $log->scanned_tracking_number }}</span>
+                </div>
+                <span class="px-2 py-1 rounded-full text-[10px] font-bold text-white {{ $log->status === 'success' ? 'bg-green-500' : ($log->status === 'duplicate' ? 'bg-rose-500' : 'bg-amber-500') }}">
                     {{ strtoupper($log->status) }}
+                </span>
+            </div>
+            
+            <div class="mt-2 text-sm text-slate-600 leading-tight">
+                <span class="font-semibold text-slate-700">Barang:</span> {{ $log->receipt ? ($log->receipt->product_name ?: '-') : '-' }}
+            </div>
+            
+            <div class="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-slate-100">
+                <div>
+                    <span class="text-[10px] font-semibold text-slate-400 uppercase block">Ekspedisi</span>
+                    <span class="text-sm font-medium text-slate-700">{{ $log->receipt ? ($log->receipt->expedition ? $log->receipt->expedition->name : '-') : '-' }}</span>
+                </div>
+                <div>
+                    <span class="text-[10px] font-semibold text-slate-400 uppercase block">Operator</span>
+                    <span class="text-sm font-medium text-slate-700">{{ $log->user->name ?? 'System' }}</span>
                 </div>
             </div>
-            <div class="text-sm text-gray-500 flex justify-between">
-                <span>{{ $log->receipt ? ($log->receipt->expedition ? $log->receipt->expedition->name : 'N/A') : 'Tidak terdaftar' }}</span>
-                <span>{{ $log->created_at->format('H:i:s') }}</span>
-            </div>
-            <div class="text-xs text-gray-400 mt-2">
-                Oleh: {{ $log->user->name ?? 'System' }}
+            
+            <div class="mt-1 pt-2 border-t border-slate-100">
+                <span class="text-[10px] font-semibold text-slate-400 uppercase block">Waktu Scan</span>
+                <span class="text-xs font-medium text-slate-500">{{ $log->created_at->format('d M Y, H:i:s') }}</span>
             </div>
         </div>
         @empty
-        <div class="bg-white p-6 rounded-xl shadow text-center text-gray-500">
+        <div class="bg-white p-8 rounded-xl shadow-sm border border-slate-200 text-center text-slate-500">
             Data tidak ditemukan.
         </div>
         @endforelse
@@ -51,6 +67,7 @@
                 <tr>
                     <th class="px-6 py-3">Waktu</th>
                     <th class="px-6 py-3">No. Resi</th>
+                    <th class="px-6 py-3">Barang</th>
                     <th class="px-6 py-3">Ekspedisi</th>
                     <th class="px-6 py-3">Status</th>
                     <th class="px-6 py-3">Operator</th>
@@ -61,6 +78,7 @@
                 <tr class="bg-white border-b hover:bg-gray-50">
                     <td class="px-6 py-4">{{ $log->created_at->format('d/m/Y H:i:s') }}</td>
                     <td class="px-6 py-4 font-medium text-gray-900">{{ $log->scanned_tracking_number }}</td>
+                    <td class="px-6 py-4 truncate max-w-[200px]" title="{{ $log->receipt ? $log->receipt->product_name : '' }}">{{ $log->receipt ? ($log->receipt->product_name ?: '-') : '-' }}</td>
                     <td class="px-6 py-4">{{ $log->receipt ? ($log->receipt->expedition ? $log->receipt->expedition->name : '-') : '-' }}</td>
                     <td class="px-6 py-4">
                         <span class="px-2 py-1 rounded-full text-xs text-white {{ $log->status === 'success' ? 'bg-green-500' : ($log->status === 'duplicate' ? 'bg-red-500' : 'bg-yellow-500') }}">
@@ -71,7 +89,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="5" class="px-6 py-8 text-center">Data tidak ditemukan.</td>
+                    <td colspan="6" class="px-6 py-8 text-center">Data tidak ditemukan.</td>
                 </tr>
                 @endforelse
             </tbody>
@@ -79,6 +97,11 @@
     </div>
 
     <div class="mt-4">
+        @if($logs->hasPages())
+        <div class="text-xs text-slate-500 mb-3 md:hidden text-center font-semibold">
+            Halaman {{ $logs->currentPage() }} dari {{ $logs->lastPage() }}
+        </div>
+        @endif
         {{ $logs->links() }}
     </div>
 </div>

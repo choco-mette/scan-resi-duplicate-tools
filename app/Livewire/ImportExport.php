@@ -24,9 +24,10 @@ class ImportExport extends Component
     public $manual_order_id = '';
     public $manual_expedition_id = '';
 
-    public function updatingFile()
+    public function updatedFile()
     {
         $this->resetPage();
+        $this->import();
     }
 
     public function import()
