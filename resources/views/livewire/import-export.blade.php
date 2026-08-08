@@ -48,6 +48,7 @@
                         <th class="px-6 py-4">Ekspedisi</th>
                         <th class="px-6 py-4">Status</th>
                         <th class="px-6 py-4">Waktu Dibuat</th>
+                        <th class="px-6 py-4 text-right">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -64,10 +65,15 @@
                             </span>
                         </td>
                         <td class="px-6 py-4 text-slate-400">{{ $receipt->created_at->format('d/m/Y H:i') }}</td>
+                        <td class="px-6 py-4 text-right">
+                            <button onclick="confirmDelete({{ $receipt->id }}, '{{ $receipt->tracking_number }}')" class="text-red-500 hover:text-red-700 transition" title="Hapus Resi">
+                                <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="px-6 py-12 text-center text-slate-500 bg-white">Belum ada data resi. Silakan import atau tambah manual.</td>
+                        <td colspan="8" class="px-6 py-12 text-center text-slate-500 bg-white">Belum ada data resi. Silakan import atau tambah manual.</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -75,9 +81,9 @@
         </div>
 
         <!-- Mobile Card View -->
-        <div class="md:hidden space-y-3">
+        <div class="md:hidden space-y-3 relative">
             @forelse($receipts as $receipt)
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col gap-2">
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col gap-2 relative">
                 <div class="flex justify-between items-start">
                     <div>
                         <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">No. Resi</span>
@@ -109,9 +115,15 @@
                     </div>
                 </div>
                 
-                <div class="mt-1 pt-2 border-t border-slate-100">
-                    <span class="text-[10px] font-semibold text-slate-400 uppercase block">Ditambahkan pada</span>
-                    <span class="text-xs font-medium text-slate-500">{{ $receipt->created_at->format('d M Y, H:i') }}</span>
+                <div class="mt-2 pt-3 border-t border-slate-100 flex justify-between items-center">
+                    <div>
+                        <span class="text-[10px] font-semibold text-slate-400 uppercase block">Ditambahkan pada</span>
+                        <span class="text-xs font-medium text-slate-500">{{ $receipt->created_at->format('d M Y, H:i') }}</span>
+                    </div>
+                    <button onclick="confirmDelete({{ $receipt->id }}, '{{ $receipt->tracking_number }}')" class="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-lg text-xs font-bold transition shadow-sm" title="Hapus Resi">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        Hapus
+                    </button>
                 </div>
             </div>
             @empty
@@ -212,5 +224,22 @@
                 });
             });
         });
+
+        function confirmDelete(id, trackingNumber) {
+            Swal.fire({
+                title: 'Hapus Resi?',
+                text: `Yakin ingin menghapus resi ${trackingNumber}? Data riwayat scan juga akan terhapus permanen.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Livewire.dispatch('execute-delete-receipt', { id: id });
+                }
+            });
+        }
     </script>
 </div>

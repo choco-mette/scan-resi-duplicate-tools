@@ -100,6 +100,18 @@ class ImportExport extends Component
         $this->showModal = false;
     }
 
+    #[On('execute-delete-receipt')]
+    public function deleteReceipt($id)
+    {
+        $receipt = Receipt::find($id);
+        if ($receipt) {
+            // Hapus log scan terkait terlebih dahulu (jika tidak ada cascade delete di DB)
+            \App\Models\ScanLog::where('receipt_id', $id)->delete();
+            $receipt->delete();
+            $this->importStatus = 'Resi ' . $receipt->tracking_number . ' berhasil dihapus.';
+        }
+    }
+
     public function render()
     {
         return view('livewire.import-export', [
