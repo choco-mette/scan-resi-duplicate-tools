@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     container_name: scan-resi-app
     ports:
-      - "8000:80"
+      - "8046:80"
     volumes:
       # Mapping file database lokal dengan file di dalam container
       # Pastikan file database/database.sqlite di lokal sudah terbuat agar tidak dianggap folder oleh docker
