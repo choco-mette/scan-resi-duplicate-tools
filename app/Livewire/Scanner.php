@@ -12,6 +12,7 @@ class Scanner extends Component
     public $scannedTrackingNumber = '';
     public $scanStatus = null; // 'success', 'duplicate', 'unknown'
     public $message = '';
+    public $scanTime = '';
 
     public function processScan($trackingNumber)
     {
@@ -24,6 +25,7 @@ class Scanner extends Component
         if (!$receipt) {
             $this->scanStatus = 'unknown';
             $this->message = "Resi {$trackingNumber} tidak terdaftar!";
+            $this->scanTime = now()->format('d/m/Y H:i:s');
             $this->logScan('unknown');
             $this->dispatch('scanProcessed', status: 'unknown');
             return;
@@ -35,6 +37,7 @@ class Scanner extends Component
         if ($receipt->status === 'scanned') {
             $this->scanStatus = 'duplicate';
             $this->message = "DUPLIKAT! Resi {$trackingNumber}{$productInfo} sudah di-scan.";
+            $this->scanTime = now()->format('d/m/Y H:i:s');
             $this->logScan('duplicate', $receipt->id);
             $this->dispatch('scanProcessed', status: 'duplicate');
             return;
@@ -48,6 +51,7 @@ class Scanner extends Component
         
         $this->scanStatus = 'success';
         $this->message = "OK! Resi {$trackingNumber}{$productInfo} valid.";
+        $this->scanTime = now()->format('d/m/Y H:i:s');
         $this->logScan('success', $receipt->id);
         $this->dispatch('scanProcessed', status: 'success');
     }

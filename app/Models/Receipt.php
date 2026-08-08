@@ -9,11 +9,17 @@ class Receipt extends Model
 {
     use HasFactory;
 
+    protected $casts = [
+        'scanned_at' => 'datetime',
+        'deadline_at' => 'datetime',
+    ];
+
     protected $fillable = [
         'expedition_id',
         'tracking_number',
         'order_id',
         'product_name',
+        'deadline_at',
         'quantity',
         'status',
         'scanned_at',

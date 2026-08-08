@@ -2,9 +2,11 @@
     x-data="{
         scanStatus: @entangle('scanStatus'),
         message: @entangle('message'),
+        scanTime: @entangle('scanTime'),
         bgColor: 'bg-white',
         isScanning: false,
         html5QrCode: null,
+        resetTimeout: null,
         
         init() {
             // Auto-start camera
@@ -27,11 +29,12 @@
                     this.vibrate([300]);
                 }
                 
-                // Reset setelah 2 detik
-                setTimeout(() => { 
+                // Reset setelah 4.5 detik, batalkan timer sebelumnya jika ada scan baru
+                if (this.resetTimeout) clearTimeout(this.resetTimeout);
+                this.resetTimeout = setTimeout(() => { 
                     this.bgColor = 'bg-white';
                     this.scanStatus = null;
-                }, 2000);
+                }, 4500);
             });
         },
         playSound(freq, type, duration) {
@@ -64,7 +67,7 @@
                 (decodedText) => {
                     @this.processScan(decodedText);
                     this.html5QrCode.pause();
-                    setTimeout(() => this.html5QrCode.resume(), 2000);
+                    setTimeout(() => this.html5QrCode.resume(), 4500);
                 },
                 (errorMessage) => { }
             ).catch(err => {
@@ -90,7 +93,11 @@
         <template x-if="scanStatus">
             <div class="mb-8">
                 <h2 class="text-4xl font-black text-white mb-2" x-text="scanStatus === 'success' ? 'VALID' : (scanStatus === 'duplicate' ? 'DUPLIKAT' : 'TIDAK DIKENAL')"></h2>
-                <p class="text-xl text-white font-semibold" x-text="message"></p>
+                <p class="text-xl text-white font-semibold mb-2" x-text="message"></p>
+                <div class="inline-block px-3 py-1 bg-black/20 rounded-full text-white/90 text-sm font-medium" x-show="scanTime">
+                    <svg class="w-4 h-4 inline-block mr-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span x-text="scanTime"></span>
+                </div>
             </div>
         </template>
         
@@ -101,12 +108,6 @@
                 <p class="text-slate-500" x-show="!isScanning">Arahkan scanner atau kamera ke resi</p>
             </div>
         </template>
-
-        <!-- Hidden input for Scanner Gun -->
-        <form wire:submit.prevent="processScan($refs.scannerInput.value); $refs.scannerInput.value = '';" class="w-full max-w-md">
-            <input type="text" x-ref="scannerInput" autofocus class="w-full p-4 text-2xl text-center border-2 border-slate-300 rounded-xl focus:border-sky-500 focus:ring focus:ring-sky-200 focus:outline-none mb-4 transition" placeholder="Atau ketik/scan resi disini..." />
-            <button type="submit" class="hidden">Scan</button>
-        </form>
 
         <!-- HTML5 QRCode Camera Container -->
         <div x-show="isScanning" class="w-full max-w-md mt-4" style="display: none;">

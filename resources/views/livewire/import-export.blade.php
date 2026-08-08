@@ -42,6 +42,7 @@
                 <thead class="text-xs text-slate-700 uppercase bg-slate-50 border-b border-slate-200">
                     <tr>
                         <th class="px-6 py-4">No. Resi</th>
+                        <th class="px-6 py-4">Batas Kirim</th>
                         <th class="px-6 py-4">Barang</th>
                         <th class="px-6 py-4">No. Pesanan</th>
                         <th class="px-6 py-4">Ekspedisi</th>
@@ -53,6 +54,7 @@
                     @forelse($receipts as $receipt)
                     <tr class="bg-white border-b hover:bg-slate-50">
                         <td class="px-6 py-4 font-bold text-slate-900">{{ $receipt->tracking_number }}</td>
+                        <td class="px-6 py-4 font-medium {{ $receipt->deadline_at && $receipt->deadline_at->isPast() ? 'text-red-500' : 'text-slate-600' }}">{{ $receipt->deadline_at ? $receipt->deadline_at->format('d/m/Y H:i') : '-' }}</td>
                         <td class="px-6 py-4 truncate max-w-[200px]" title="{{ $receipt->product_name }}">{{ $receipt->product_name ?: '-' }}</td>
                         <td class="px-6 py-4">{{ $receipt->order_id ?: '-' }}</td>
                         <td class="px-6 py-4">{{ $receipt->expedition ? $receipt->expedition->name : '-' }}</td>
@@ -65,7 +67,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="px-6 py-12 text-center text-slate-500 bg-white">Belum ada data resi. Silakan import atau tambah manual.</td>
+                        <td colspan="7" class="px-6 py-12 text-center text-slate-500 bg-white">Belum ada data resi. Silakan import atau tambah manual.</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -89,6 +91,12 @@
                 <div class="mt-2 text-sm text-slate-600 leading-tight">
                     <span class="font-semibold text-slate-700">Barang:</span> {{ $receipt->product_name ?: '-' }}
                 </div>
+
+                @if($receipt->deadline_at)
+                <div class="mt-1 text-sm leading-tight {{ $receipt->deadline_at->isPast() ? 'text-red-500 font-bold' : 'text-slate-600' }}">
+                    <span class="font-semibold {{ $receipt->deadline_at->isPast() ? 'text-red-500' : 'text-slate-700' }}">Batas Kirim:</span> {{ $receipt->deadline_at->format('d M Y, H:i') }}
+                </div>
+                @endif
                 
                 <div class="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-slate-100">
                     <div>
@@ -179,4 +187,30 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('show-missing-resi-alert', (event) => {
+                const orders = event.missingOrders;
+                const orderList = orders.slice(0, 5).join(', ') + (orders.length > 5 ? ` dan ${orders.length - 5} lainnya` : '');
+                
+                Swal.fire({
+                    title: 'Resi Kosong Ditemukan!',
+                    text: `Ada ${orders.length} pesanan tanpa resi (contoh: ${orderList}). Lanjutkan import data yang ada resinya saja?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#0284c7',
+                    cancelButtonColor: '#64748b',
+                    confirmButtonText: 'Ya, Lanjutkan!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Livewire.dispatch('confirm-import');
+                    } else {
+                        Livewire.dispatch('cancel-import');
+                    }
+                });
+            });
+        });
+    </script>
 </div>

@@ -5,6 +5,7 @@ namespace App\Livewire;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
+use Livewire\Attributes\On;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\ReceiptsImport;
 use App\Models\Receipt;
@@ -27,7 +28,36 @@ class ImportExport extends Component
     public function updatedFile()
     {
         $this->resetPage();
+        
+        try {
+            $checker = new \App\Imports\MissingReceiptsCheckImport;
+            Excel::import($checker, $this->file);
+            
+            $missing = array_unique($checker->missingOrders);
+            
+            if (!empty($missing)) {
+                $this->dispatch('show-missing-resi-alert', missingOrders: array_values($missing));
+                return;
+            }
+            
+            $this->import();
+        } catch (\Exception $e) {
+            Log::error('Preview error: ' . $e->getMessage());
+            $this->importStatus = 'Gagal memvalidasi file: ' . $e->getMessage();
+        }
+    }
+
+    #[On('confirm-import')]
+    public function confirmImport()
+    {
         $this->import();
+    }
+
+    #[On('cancel-import')]
+    public function cancelImport()
+    {
+        $this->file = null;
+        $this->importStatus = 'Proses import dibatalkan.';
     }
 
     public function import()
@@ -42,7 +72,7 @@ class ImportExport extends Component
             $this->file = null;
         } catch (\Exception $e) {
             Log::error('Import error: ' . $e->getMessage());
-            $this->importStatus = 'Gagal mengimpor data. Pastikan format kolom benar.';
+            $this->importStatus = 'Gagal: ' . $e->getMessage();
         }
     }
 
@@ -71,7 +101,8 @@ class ImportExport extends Component
 
     public function render()
     {
-        $receipts = Receipt::with('expedition')->latest()->paginate(15);
+        $today = \Carbon\Carbon::today();
+        $receipts = Receipt::with('expedition')->whereDate('created_at', $today)->latest()->paginate(15);
         $expeditions = Expedition::all();
 
         return view('livewire.import-export', compact('receipts', 'expeditions'));

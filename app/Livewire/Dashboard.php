@@ -35,7 +35,7 @@ class Dashboard extends Component
             'receipts as total_scanned' => function($q) use ($today) {
                 $q->whereDate('created_at', $today)->where('status', 'scanned');
             }
-        ])->get();
+        ])->having('total_target', '>', 0)->get();
 
         return view('livewire.dashboard', compact(
             'totalTarget', 
