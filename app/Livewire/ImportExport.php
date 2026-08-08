@@ -11,6 +11,7 @@ use App\Imports\ReceiptsImport;
 use App\Models\Receipt;
 use App\Models\Expedition;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class ImportExport extends Component
 {
@@ -101,10 +102,15 @@ class ImportExport extends Component
 
     public function render()
     {
-        $today = \Carbon\Carbon::today();
-        $receipts = Receipt::with('expedition')->whereDate('created_at', $today)->latest()->paginate(15);
-        $expeditions = Expedition::all();
-
-        return view('livewire.import-export', compact('receipts', 'expeditions'));
+        return view('livewire.import-export', [
+            'receipts' => Receipt::with('expedition')
+                                ->where(function($q) {
+                                    $q->where('status', 'unscanned')
+                                      ->orWhereDate('scanned_at', Carbon::today());
+                                })
+                                ->latest()
+                                ->paginate(15),
+            'expeditions' => Expedition::all()
+        ]);
     }
 }

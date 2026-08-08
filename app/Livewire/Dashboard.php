@@ -13,11 +13,13 @@ class Dashboard extends Component
     {
         $today = Carbon::today();
         
-        $totalTarget = Receipt::whereDate('created_at', $today)->count();
-        $totalScanned = Receipt::whereDate('created_at', $today)
-                              ->where('status', 'scanned')
-                              ->count();
-        $totalUnscanned = $totalTarget - $totalScanned;
+        $totalTarget = Receipt::where(function($q) use ($today) {
+            $q->where('status', 'unscanned')
+              ->orWhereDate('scanned_at', $today);
+        })->count();
+
+        $totalScanned = Receipt::whereDate('scanned_at', $today)->count();
+        $totalUnscanned = Receipt::where('status', 'unscanned')->count();
         
         $totalDuplicates = ScanLog::whereDate('created_at', $today)
                                      ->where('status', 'duplicate')
@@ -30,12 +32,16 @@ class Dashboard extends Component
         // Metrics by Expedition
         $expeditionsData = \App\Models\Expedition::withCount([
             'receipts as total_target' => function($q) use ($today) {
-                $q->whereDate('created_at', $today);
+                $q->where('status', 'unscanned')
+                  ->orWhereDate('scanned_at', $today);
             },
             'receipts as total_scanned' => function($q) use ($today) {
-                $q->whereDate('created_at', $today)->where('status', 'scanned');
+                $q->whereDate('scanned_at', $today);
             }
-        ])->having('total_target', '>', 0)->get();
+        ])->whereHas('receipts', function($q) use ($today) {
+            $q->where('status', 'unscanned')
+              ->orWhereDate('scanned_at', $today);
+        })->get();
 
         return view('livewire.dashboard', compact(
             'totalTarget', 

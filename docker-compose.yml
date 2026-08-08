@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: scan-resi-app
+    ports:
+      - "8000:80"
+    volumes:
+      # Mapping file database lokal dengan file di dalam container
+      # Pastikan file database/database.sqlite di lokal sudah terbuat agar tidak dianggap folder oleh docker
+      - ./database/database.sqlite:/var/www/html/database/database.sqlite
+      # Mapping storage untuk file (jika ada upload dsb)
+      - ./storage/app/public:/var/www/html/storage/app/public
+    restart: unless-stopped

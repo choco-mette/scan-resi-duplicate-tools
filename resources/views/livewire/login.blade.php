@@ -25,9 +25,5 @@
             <button type="submit" class="text-white bg-slate-800 hover:bg-slate-700 focus:ring-4 focus:outline-none focus:ring-slate-300 font-medium rounded-lg text-sm w-full px-5 py-3 text-center transition">Login Masuk</button>
         </form>
 
-        <div class="mt-6 text-center text-sm text-gray-500">
-            <p>Admin: admin@test.com / password</p>
-            <p>Operator: operator@test.com / password</p>
-        </div>
     </div>
 </div>
